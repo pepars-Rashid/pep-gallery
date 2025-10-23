@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, primaryKey, integer, decimal, jsonb, pgEnum, AnyPgColumn } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, primaryKey, integer, decimal, jsonb, pgEnum, AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // ===== ENUMS =====
@@ -208,7 +208,7 @@ export const verificationTokens = pgTable(
   ]
 );
 
-export const usersRelations = relations(users, ({ one, many }) => ({
+export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
   transactions: many(transactions),
   favorites: many(favorites),

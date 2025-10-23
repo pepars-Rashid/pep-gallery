@@ -1,7 +1,6 @@
 import { db } from "@/database/db"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { compareUserFromDb } from "@/utils/auth/compare-user"
-import { saltAndHashPassword } from "@/utils/auth/hash-passord"
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import GitHub from "next-auth/providers/github"

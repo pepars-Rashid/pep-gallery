@@ -38,6 +38,7 @@ export async function compareUserFromDb(email: string, password: string) {
     }
 
     // 4. Return user without sensitive data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...userWithoutPassword } = foundUser;
     return userWithoutPassword;
 
