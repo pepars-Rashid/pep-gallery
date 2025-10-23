@@ -121,7 +121,7 @@ export default function SignupForm() {
               <GitHubIcon />
               <span className="ml-2">GitHub</span>
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => signIn("github")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
               <GoogleIcon />
               <span className="ml-2">Google</span>
             </Button>

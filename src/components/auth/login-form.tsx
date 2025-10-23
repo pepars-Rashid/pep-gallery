@@ -101,11 +101,11 @@ export default function LoginForm() {
         <CardContent className="space-y-6">
           {/* OAuth Providers */}
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("github")}>
               <GitHubIcon />
               <span className="ml-2">GitHub</span>
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => signIn("github")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
               <GoogleIcon />
               <span className="ml-2">Google</span>
             </Button>
