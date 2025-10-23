@@ -20,21 +20,21 @@ export async function compareUserFromDb(email: string, password: string) {
       .limit(1);
 
     if (user.length === 0) {
-      return null; // User not found
+      return { error: 'USER_NOT_FOUND' }; // User doesn't exist
     }
 
     const foundUser = user[0];
 
     // 2. Check if user has a password hash (social login users might not have one)
     if (!foundUser.passwordHash) {
-      return null;
+      return { error: 'NO_PASSWORD_SET' }; // Social login user trying credentials
     }
 
     // 3. Compare the provided password with the stored hash
     const isPasswordValid = await bcrypt.compare(password, foundUser.passwordHash);
 
     if (!isPasswordValid) {
-      return null;
+      return { error: 'INVALID_PASSWORD' }; // Wrong password
     }
 
     // 4. Return user without sensitive data
@@ -43,6 +43,6 @@ export async function compareUserFromDb(email: string, password: string) {
 
   } catch (error) {
     console.error('Error comparing user:', error);
-    return null;
+    return { error: 'DATABASE_ERROR' };
   }
 }
