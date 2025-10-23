@@ -209,6 +209,42 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground p-6;
+    @apply bg-background text-foreground h-[2000px];
   }
+}
+
+.profile-menu-left [data-slot="navigation-menu-content"] {
+  left: auto;
+  right: 0;
+}
+
+/* Alternative simpler approach */
+.profile-menu-left [data-slot="navigation-menu-viewport"] {
+  left: auto;
+  right: 0;
+  justify-content: flex-end;
+}
+
+.no-hover-effect {
+  background-color: transparent !important;
+}
+
+.no-hover-effect:hover {
+  background-color: transparent !important;
+}
+
+.no-hover-effect:focus {
+  background-color: transparent !important;
+}
+
+.no-hover-effect[data-state="open"] {
+  background-color: transparent !important;
+}
+
+.no-hover-effect[data-state="open"]:hover {
+  background-color: transparent !important;
+}
+
+.no-hover-effect[data-state="open"]:focus {
+  background-color: transparent !important;
 }
