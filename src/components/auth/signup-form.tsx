@@ -26,9 +26,8 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '../ui/password-input'
 
 import { registerFormSchema } from '@/lib/validation-schemas'
-import { signIn } from 'next-auth/react'
+import { signIn, SignInResponse } from 'next-auth/react'
 import { createUser } from '@/utils/auth/create-user'
-import { useRouter } from 'next/navigation'
 
 // Google Icon Component
 const GoogleIcon = () => (
@@ -62,7 +61,6 @@ const GitHubIcon = () => (
 const formSchema = registerFormSchema
 
 export default function SignupForm() {
-  const router = useRouter()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -84,13 +82,13 @@ export default function SignupForm() {
         const result = await signIn('credentials', {
           email: values.email,
           password: values.password,
-          redirect: false,
-        })
+          redirectTo: "/profile" ,
+        }) as SignInResponse | undefined
 
         if (result?.error) {
           toast.error('Account created but login failed. Please try logging in manually.')
         } else {
-          router.push('/') // Redirect to home page or dashboard
+          toast.success('Welcome aboard!')
         }
       }
     } catch (error) {
@@ -117,11 +115,11 @@ export default function SignupForm() {
         <CardContent className="space-y-6">
           {/* OAuth Providers */}
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full" onClick={() => signIn("github")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("github", { redirectTo: "/profile" })}>
               <GitHubIcon />
               <span className="ml-2">GitHub</span>
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("google", { redirectTo: "/profile" })}>
               <GoogleIcon />
               <span className="ml-2">Google</span>
             </Button>

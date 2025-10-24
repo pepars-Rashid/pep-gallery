@@ -24,9 +24,8 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '../ui/password-input'
-import { signIn } from "next-auth/react"
+import { signIn, SignInResponse } from "next-auth/react"
 import { loginFormSchema } from '@/lib/validation-schemas'
-import { useRouter } from 'next/navigation'
 
 // Google Icon Component
 const GoogleIcon = () => (
@@ -58,7 +57,6 @@ const GitHubIcon = () => (
 )
 
 export default function LoginForm() {
-  const router = useRouter()
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -69,17 +67,16 @@ export default function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof loginFormSchema>) {
     try {
-      const result = await signIn('credentials', {
-        email: values.email,
-        password: values.password,
-        redirect: false,
-      })
+        const result = await signIn('credentials', {
+          email: values.email,
+          password: values.password,
+          redirectTo: "/profile" ,
+        }) as SignInResponse | undefined
 
       if (result?.error) {
         toast.error('Invalid credentials. Please try again.')
       } else {
         toast.success('Welcome back!')
-        router.push('/') // Redirect to home page or dashboard
       }
     } catch (error) {
       console.error('Login error:', error)
@@ -101,11 +98,11 @@ export default function LoginForm() {
         <CardContent className="space-y-6">
           {/* OAuth Providers */}
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full" onClick={() => signIn("github")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("github", { redirectTo: "/profile" })}>
               <GitHubIcon />
               <span className="ml-2">GitHub</span>
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => signIn("google")}>
+            <Button variant="outline" className="w-full" onClick={() => signIn("google", { redirectTo: "/profile" })}>
               <GoogleIcon />
               <span className="ml-2">Google</span>
             </Button>
