@@ -208,6 +208,7 @@ export const verificationTokens = pgTable(
   ]
 );
 
+// ===== RELATIONS =====
 export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
   transactions: many(transactions),
