@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-      Gallery web app for sharing and selling digital assets with community features.
+-  Gallery web app for sharing and selling digital assets with community features.
 
 ### Tech Stack
 
@@ -143,7 +143,7 @@ await signOut();
 
 ## Database Overview
 
-    Neon PostgreSQL database with complex relationships for gallery management, user interactions, and hierarchical categories.
+- Neon PostgreSQL database with complex relationships for gallery management, user interactions, and hierarchical categories.
 
 ```mermaid
 erDiagram
@@ -360,5 +360,4 @@ _________________________________________
 
 ### This project still in progress under this plan:
 
-![Project Plan](project-plan.png)
-
+![Project Plan](https://github.com/pepars-Rashid/pep-gallery/blob/main/project-plan.png)
