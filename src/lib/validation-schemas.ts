@@ -3,14 +3,15 @@ import { z } from 'zod'
 export const registerFormSchema = z.object({
   name: z
     .string()
+    .nonempty('name is required')
     .min(2, 'Name must be at least 2 characters')
     .max(20, 'Name must be less than 20 characters'),
   email: z
     .email('Please enter a valid email address')
-    .min(1, 'Email is required'),
+    .nonempty('Email is required'),
   password: z
     .string()
-    .min(1, "Password is required")
+    .nonempty('passowrd is required')
     .min(8, 'Password must be at least 8 characters')
     .max(40, 'Password must be less than 40 characters')
     .regex(
@@ -26,10 +27,10 @@ export const registerFormSchema = z.object({
 export const loginFormSchema = z.object({
   email: z
     .email('Please enter a valid email address')
-    .min(1, 'Email is required'),
+    .nonempty('Email is required'),
   password: z
     .string()
-    .min(1, "Password is required")
+    .nonempty('passowrd is required')
     .min(8, 'Password must be at least 8 characters')
     .max(40, 'Password must be less than 40 characters'),
 })

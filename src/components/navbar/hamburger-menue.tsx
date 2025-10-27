@@ -11,8 +11,8 @@ import {
   CircleCheckIcon,
   CircleHelpIcon,
   CircleIcon,
-  LucideActivity,
   Menu,
+  PaletteIcon,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -49,7 +49,7 @@ export default function HamburgerMenue({
           </Button>
           {/* Logo */}
           <Link href="/" className="flex flex-row items-center justify-center">
-            <LucideActivity />
+            <PaletteIcon />
             <span className="ml-2">pep-gallery</span>
           </Link>
         </div>

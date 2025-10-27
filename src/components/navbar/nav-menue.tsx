@@ -7,7 +7,7 @@ import {
   CircleIcon,
   HeartIcon,
   LogIn,
-  LucideActivity,
+  PaletteIcon,
   Settings,
 } from "lucide-react";
 import {
@@ -59,7 +59,7 @@ function MobileNavbar({ session }: { session: Session | null }) {
             <>
               {/* Bell Icon */}
               <Link href="/profile/notifications">
-                <BellRingIcon className="h-5 w-5" />
+                <BellRingIcon className="size-5" />
               </Link>
               {/* Profile Drawer */}
               <ProfileDrawer session={session} />
@@ -203,7 +203,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
               href="/"
               className="flex flex-row items-center justify-center"
             >
-              <LucideActivity />
+              <PaletteIcon className="size-8"/>
               <span>pep-gallery</span>
             </Link>
           </NavigationMenuLink>
@@ -266,7 +266,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
           <>
             {/* if user exist and not subsctiber update to pro */}
             <Link href={"/pricing"}>
-              <Button variant="outline">Upgrade Plan</Button>
+              <Button className="text-base" variant="outline">Upgrade Plan</Button>
             </Link>
             <NavigationMenuItem>
               <NavigationMenuLink
@@ -274,7 +274,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
                 className={navigationMenuTriggerStyle()}
               >
                 <Link href="/profile/notifications">
-                  <BellRingIcon />
+                  <BellRingIcon className="size-5"/>
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>

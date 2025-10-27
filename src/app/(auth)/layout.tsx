@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { LucideActivity } from 'lucide-react'
+import { PaletteIcon } from 'lucide-react'
 import { ThemeProvider } from "@/components/theme-provider"
 
 export default function AuthLayout({
@@ -22,7 +22,7 @@ export default function AuthLayout({
               href="/"
               className="flex flex-row items-center justify-start"
             >
-              <LucideActivity className="h-6 w-6" />
+              <PaletteIcon className="h-6 w-6" />
               <span className="ml-2 text-lg font-semibold">pep-gallery</span>
             </Link>
           </div>

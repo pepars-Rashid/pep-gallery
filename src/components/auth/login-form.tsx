@@ -1,19 +1,12 @@
 'use client'
 
+import * as React from "react"
 import Link from 'next/link'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import * as z from 'zod'
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -22,10 +15,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { PasswordInput } from '../ui/password-input'
 import { signIn, SignInResponse } from "next-auth/react"
 import { loginFormSchema } from '@/lib/validation-schemas'
+import { Spinner } from "../ui/spinner"
 
 // Google Icon Component
 const GoogleIcon = () => (
@@ -57,6 +57,9 @@ const GitHubIcon = () => (
 )
 
 export default function LoginForm() {
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [oauthLoading, setOauthLoading] = React.useState<string | null>(null)
+
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
     defaultValues: {
@@ -66,12 +69,14 @@ export default function LoginForm() {
   })
 
   async function onSubmit(values: z.infer<typeof loginFormSchema>) {
+    setIsSubmitting(true)
+    
     try {
-        const result = await signIn('credentials', {
-          email: values.email,
-          password: values.password,
-          redirectTo: "/profile" ,
-        }) as SignInResponse | undefined
+      const result = await signIn('credentials', {
+        email: values.email,
+        password: values.password,
+        redirectTo: "/profile",
+      }) as SignInResponse | undefined
 
       if (result?.error) {
         toast.error('Invalid credentials. Please try again.')
@@ -81,12 +86,27 @@ export default function LoginForm() {
     } catch (error) {
       console.error('Login error:', error)
       toast.error('Failed to sign in. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleOAuthSignIn = async (provider: string) => {
+    setOauthLoading(provider)
+    try {
+      await signIn(provider, { redirectTo: "/profile" })
+      // Note: The redirect will happen, so we don't need to clear loading state
+      // If there's an error, the page won't redirect and we can handle it
+    } catch (error) {
+      console.error(`OAuth sign in failed for ${provider}:`, error)
+      setOauthLoading(null)
+      toast.error(`Failed to sign in with ${provider}. Please try again.`)
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-lg">
         <CardHeader className="space-y-1 text-center">
           <CardTitle className="text-2xl font-semibold tracking-tight">
             Welcome Back
@@ -98,13 +118,35 @@ export default function LoginForm() {
         <CardContent className="space-y-6">
           {/* OAuth Providers */}
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="w-full" onClick={() => signIn("github", { redirectTo: "/profile" })}>
-              <GitHubIcon />
-              <span className="ml-2">GitHub</span>
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={() => handleOAuthSignIn("github")}
+              disabled={oauthLoading !== null || isSubmitting}
+            >
+              {oauthLoading === "github" ? (
+                <Spinner/>
+              ) : (
+                <GitHubIcon />
+              )}
+              <span className="ml-2">
+                {oauthLoading === "github" ? "Connecting..." : "GitHub"}
+              </span>
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => signIn("google", { redirectTo: "/profile" })}>
-              <GoogleIcon />
-              <span className="ml-2">Google</span>
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={() => handleOAuthSignIn("google")}
+              disabled={oauthLoading !== null || isSubmitting}
+            >
+              {oauthLoading === "google" ? (
+                <Spinner/>
+              ) : (
+                <GoogleIcon />
+              )}
+              <span className="ml-2">
+                {oauthLoading === "google" ? "Connecting..." : "Google"}
+              </span>
             </Button>
           </div>
 
@@ -119,42 +161,52 @@ export default function LoginForm() {
             </div>
           </div>
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
+          <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
+            <FieldGroup>
+              <Controller
                 name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        placeholder="Enter your email address"
-                        autoComplete="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="login-form-email">
+                      Email Address
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id="login-form-email"
+                      type="email"
+                      placeholder="Enter your email address"
+                      autoComplete="email"
+                      aria-invalid={fieldState.invalid}
+                      disabled={isSubmitting || oauthLoading !== null}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
               />
 
-              <FormField
-                control={form.control}
+              <Controller
                 name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <PasswordInput
-                        placeholder="Enter your password"
-                        autoComplete="current-password"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="login-form-password">
+                      Password
+                    </FieldLabel>
+                    <PasswordInput
+                      {...field}
+                      id="login-form-password"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      aria-invalid={fieldState.invalid}
+                      disabled={isSubmitting || oauthLoading !== null}
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
                 )}
               />
 
@@ -169,11 +221,23 @@ export default function LoginForm() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full">
-                Sign In
+              <Button 
+                type="submit" 
+                form="login-form" 
+                className="w-full"
+                disabled={isSubmitting || oauthLoading !== null}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Spinner/>
+                    Signing In...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
-            </form>
-          </Form>
+            </FieldGroup>
+          </form>
 
           <div className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
