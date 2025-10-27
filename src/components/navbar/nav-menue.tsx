@@ -36,7 +36,7 @@ export async function Navbar() {
   const session = await auth();
 
   return (
-    <nav className="w-full fixed top-0 left-0 z-50 bg-background">
+    <nav className="fixed w-full z-50 bg-background lg:p-6">
       {/* mobile nav */}
       <MobileNavbar session={session} />
       {/* __________ */}
@@ -50,7 +50,7 @@ export async function Navbar() {
 
 function MobileNavbar({ session }: { session: Session | null }) {
   return (
-    <div className="relative p-6 lg:hidden">
+    <div className="relative lg:hidden p-3">
       <HamburgerMenue>
         {/* Right side - Bell and Profile */}
         {/* search bar */}
@@ -192,10 +192,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
     : "U";
 
   return (
-    <NavigationMenu
-      viewport={false}
-      className="hidden lg:flex justify-between p-6 "
-    >
+    <NavigationMenu viewport={false} className="hidden lg:flex justify-between">
       <NavigationMenuList className="flex-wrap">
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
@@ -203,7 +200,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
               href="/"
               className="flex flex-row items-center justify-center"
             >
-              <PaletteIcon className="size-8"/>
+              <PaletteIcon className="size-8" />
               <span>pep-gallery</span>
             </Link>
           </NavigationMenuLink>
@@ -266,7 +263,9 @@ function DesktopNavbar({ session }: { session: Session | null }) {
           <>
             {/* if user exist and not subsctiber update to pro */}
             <Link href={"/pricing"}>
-              <Button className="text-base" variant="outline">Upgrade Plan</Button>
+              <Button className="text-base" variant="outline">
+                Upgrade Plan
+              </Button>
             </Link>
             <NavigationMenuItem>
               <NavigationMenuLink
@@ -274,7 +273,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
                 className={navigationMenuTriggerStyle()}
               >
                 <Link href="/profile/notifications">
-                  <BellRingIcon className="size-5"/>
+                  <BellRingIcon className="size-5" />
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
