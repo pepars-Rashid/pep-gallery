@@ -3,11 +3,9 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Bookmark, Heart, Share2 } from "lucide-react";
-import { Share } from "next/font/google";
-import { Skeleton } from "./ui/skeleton";
 import { MasnoryLayout } from "./masnory-layout";
 import { MasonrySkelton } from "./masonry-skelton";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
@@ -193,6 +191,7 @@ export default function MasonryGrid() {
                 width: `${size.width}px`,
                 height: `${size.height}px`,
               }}
+              key={index}
             />
           ))}
         </MasnoryLayout>

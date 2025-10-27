@@ -1,8 +1,5 @@
 import MasonryGrid from "@/components/masonry";
-import { MasonrySkelton } from "@/components/masonry-skelton";
 import { Navbar } from "@/components/navbar/nav-menue";
-import { SearchBar } from "@/components/search-bar";
-import Image from "next/image";
 
 export default function Home() {
   return (
