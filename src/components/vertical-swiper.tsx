@@ -1,30 +1,20 @@
-// components/MasonryGrid.tsx
 "use client";
-
+import * as React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import { PicsumImage } from "./masonry";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
-import { Bookmark, Heart, Share2 } from "lucide-react";
-import { MasnoryLayout } from "./masnory-layout";
-import { MasonrySkelton } from "./masonry-skelton";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
-import Link from "next/link";
+import { Heart, MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
 
-export interface PicsumImage {
-  id: string;
-  author: string;
-  width: number;
-  height: number;
-  url: string;
-  download_url: string;
-}
+export function VerticalCarousel({}) {
+  const [images, setImages] = React.useState<PicsumImage[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-export default function MasonryGrid() {
-  const [images, setImages] = useState<PicsumImage[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchImages = async () => {
       try {
         setIsLoading(true);
@@ -176,88 +166,65 @@ export default function MasonryGrid() {
   }, []);
 
   if (isLoading) {
-    return (
-      <div>
-        <MasnoryLayout>
-          {[
-            { width: 700, height: 500 },
-            { width: 600, height: 400 },
-            { width: 400, height: 300 },
-            { width: 2200, height: 700 },
-            { width: 1800, height: 900 },
-            { width: 800, height: 800 },
-          ].map((size, index) => (
-            <MasonrySkelton
-              styleName={{
-                width: `${size.width}px`,
-                height: `${size.height}px`,
-              }}
-              key={index}
-            />
-          ))}
-        </MasnoryLayout>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   return (
-    <div>
-      <MasnoryLayout>
+    <Carousel
+      opts={{
+        align: "start",
+        skipSnaps: true,
+      }}
+      orientation="vertical"
+      className="w-full lg:max-w-lg h-[90vh] lg:h-[95vh] pt-2 md:p-2 lg:pt-5"
+    >
+      <CarouselContent className="h-[90vh] lg:h-[95vh]">
         {images.map((image) => (
-          <Card className="p-1 relative" key={image.id}>
-            <CardContent className="p-1">
-              <Link href={"swiper"} target="_blank" rel="noopener noreferrer">
-                <Image
-                  alt={`Photo by ${image.author}`}
-                  src={image.download_url}
-                  width={image.width}
-                  height={image.height}
-                  className="rounded-sm hover:scale-105 transition-transform duration-300"
-                />
-              </Link>
-              <div className="absolute top-5 left-5 flex items-center gap-3">
-                <Link href={`/profile/${image.author}`}>
-                  <Avatar className="size-10 rounded-lg border flex items-center justify-center bg-black">
-                    <AvatarImage
-                      src="https://avatar.iran.liara.run/public/15"
-                      alt="@evilrabbit"
-                    />
-                    <AvatarFallback>ER</AvatarFallback>
-                  </Avatar>
-                </Link>
-                <Link href={`/profile/${image.author}`}>
-                  <span className="text-sm font-medium text-white drop-shadow-md">
-                    {image.author}
-                  </span>
-                </Link>
-              </div>
-              <div className="absolute bottom-5 right-5 flex gap-2">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
-                >
-                  <Heart className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
-                >
-                  <Bookmark className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
-                >
-                  <Share2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <CarouselItem key={image.id} className="h-[90vh] lg:h-[95vh]">
+            <div className="h-full">
+              <Card className="relative h-full w-full rounded-none p-0">
+                <CardContent className="flex items-center justify-center h-full p-0">
+                  <Image
+                    alt={`Photo by ${image.author}`}
+                    src={image.download_url}
+                    width={image.width}
+                    height={image.height}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </CardContent>
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-6">
+                  <button className="flex flex-col items-center gap-1">
+                    <Heart className="h-6 w-6 text-white drop-shadow-md" />
+                    <span className="text-white text-xs drop-shadow-md">
+                      123
+                    </span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1">
+                    <MessageCircle className="h-6 w-6 text-white drop-shadow-md" />
+                    <span className="text-white text-xs drop-shadow-md">
+                      45
+                    </span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1">
+                    <Share2 className="h-6 w-6 text-white drop-shadow-md" />
+                    <span className="text-white text-xs drop-shadow-md">
+                      Share
+                    </span>
+                  </button>
+
+                  <button className="flex flex-col items-center gap-1">
+                    <MoreHorizontal className="h-6 w-6 text-white drop-shadow-md" />
+                  </button>
+                </div>
+              </Card>
+            </div>
+          </CarouselItem>
         ))}
-      </MasnoryLayout>
-    </div>
+      </CarouselContent>
+      {/* <CarouselPrevious />
+      <CarouselNext /> */}
+    </Carousel>
   );
 }
