@@ -6,9 +6,66 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { PicsumImage } from "./masonry";
+import { PicsumImage } from "../masonry";
 import Image from "next/image";
-import { Heart, MessageCircle, MoreHorizontal, Share2 } from "lucide-react";
+import {
+  DollarSign,
+  Heart,
+  MessageCircle,
+  MoreHorizontal,
+  MoreVertical,
+  Share2,
+  ThumbsUp,
+  X,
+} from "lucide-react";
+import { MasonrySkelton } from "../masonry-skeleton";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { Button } from "../ui/button";
+import { SearchBar } from "../search-bar";
+import { Comments } from "../common/comments";
+import { ScrollArea } from "../ui/scroll-area";
+import { Avatar } from "@radix-ui/react-avatar";
+import { AvatarFallback, AvatarImage } from "../ui/avatar";
+import { SwiperSkelton } from "./swiper-skeleton";
+import { Share } from "./share";
+
+export function DrawerCarousel({
+  children,
+  trigger,
+}: {
+  children: React.ReactNode;
+  trigger: React.ReactNode;
+}) {
+  return (
+    <Drawer>
+      <DrawerTrigger asChild>
+        <Button className="flex flex-col h-fit items-center gap-1 bg-transparent">
+          {trigger}
+        </Button>
+      </DrawerTrigger>
+      <DrawerContent className="p-2">
+        <DrawerClose asChild>
+          <Button
+            variant="outline"
+            className="absolute right-4 top-4 rounded-full"
+          >
+            <X className="size-5" />
+          </Button>
+        </DrawerClose>
+        {children}
+      </DrawerContent>
+    </Drawer>
+  );
+}
 
 export function VerticalCarousel({}) {
   const [images, setImages] = React.useState<PicsumImage[]>([]);
@@ -166,23 +223,22 @@ export function VerticalCarousel({}) {
   }, []);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <SwiperSkelton />;
   }
 
   return (
     <Carousel
       opts={{
-        align: "start",
         skipSnaps: true,
       }}
       orientation="vertical"
-      className="w-full lg:max-w-lg h-[90vh] lg:h-[95vh] pt-2 md:p-2 lg:pt-5"
+      className="w-full max-w-lg h-[90vh] lg:h-[95vh]"
     >
       <CarouselContent className="h-[90vh] lg:h-[95vh]">
         {images.map((image) => (
           <CarouselItem key={image.id} className="h-[90vh] lg:h-[95vh]">
             <div className="h-full">
-              <Card className="relative h-full w-full rounded-none p-0">
+              <Card className="relative h-full w-full rounded-none p-0 bg-background">
                 <CardContent className="flex items-center justify-center h-full p-0">
                   <Image
                     alt={`Photo by ${image.author}`}
@@ -192,31 +248,76 @@ export function VerticalCarousel({}) {
                     className="max-h-full max-w-full object-contain"
                   />
                 </CardContent>
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-6">
-                  <button className="flex flex-col items-center gap-1">
-                    <Heart className="h-6 w-6 text-white drop-shadow-md" />
-                    <span className="text-white text-xs drop-shadow-md">
-                      123
-                    </span>
-                  </button>
+                <div className="absolute right-4 bottom-18 z-20 flex flex-col gap-0">
+                  <Button className="flex flex-col items-center gap-1 h-fit bg-transparent">
+                    <ThumbsUp className="size-7 " />
+                    <span className=" text-xs ">123</span>
+                  </Button>
 
-                  <button className="flex flex-col items-center gap-1">
-                    <MessageCircle className="h-6 w-6 text-white drop-shadow-md" />
-                    <span className="text-white text-xs drop-shadow-md">
-                      45
-                    </span>
-                  </button>
+                  <DrawerCarousel
+                    trigger={
+                      <>
+                        <MessageCircle className="size-7 " />
+                        <span className=" text-xs ">45</span>
+                      </>
+                    }
+                  >
+                    <DrawerHeader>
+                      <DrawerTitle className="flex">Comments 100</DrawerTitle>
+                    </DrawerHeader>
+                    <ScrollArea className="h-[360px]">
+                      <Comments />
+                    </ScrollArea>
+                  </DrawerCarousel>
 
-                  <button className="flex flex-col items-center gap-1">
-                    <Share2 className="h-6 w-6 text-white drop-shadow-md" />
-                    <span className="text-white text-xs drop-shadow-md">
-                      Share
-                    </span>
-                  </button>
+                  <DrawerCarousel
+                    trigger={
+                      <>
+                        <Share2 className="size-7 " />
+                        <span className=" text-xs ">Share</span>
+                      </>
+                    }
+                  >
+                    <DrawerHeader>
+                      <DrawerTitle>Share</DrawerTitle>
+                    </DrawerHeader>
+                    <Share/>
+                  </DrawerCarousel>
 
-                  <button className="flex flex-col items-center gap-1">
-                    <MoreHorizontal className="h-6 w-6 text-white drop-shadow-md" />
-                  </button>
+                  <DrawerCarousel
+                    trigger={
+                      <>
+                        <MoreVertical className="size-7 " />
+                      </>
+                    }
+                  >
+                    <DrawerHeader>
+                      <DrawerTitle>Move Goal</DrawerTitle>
+                      <DrawerDescription>
+                        Set your daily activity goal.
+                      </DrawerDescription>
+                    </DrawerHeader>
+                    <div className="h-[300px]"></div>
+                  </DrawerCarousel>
+                </div>
+                <div className="absolute flex flex-col gap-1 bottom-5 left-4">
+                  <div className="flex gap-2 items-center">
+                    <Avatar className="size-9 rounded-lg border flex items-center justify-center bg-black">
+                      <AvatarImage
+                        src="https://avatar.iran.liara.run/public/15"
+                        alt="@evilrabbit"
+                      />
+                      <AvatarFallback>ER</AvatarFallback>
+                    </Avatar>
+                    <p>pep</p>
+                    <Button variant='outline'>Follow</Button>
+                  </div>
+                  <p className="line-clamp-2 px-2">
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                    Eius quod, accusantium nobis quis ducimus dolor neque
+                    laborum! Magni incidunt aperiam, sapiente labore quos quo
+                    fuga facilis at, omnis distinctio ducimus?
+                  </p>
                 </div>
               </Card>
             </div>

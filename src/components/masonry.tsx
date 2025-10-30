@@ -7,7 +7,7 @@ import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Bookmark, Heart, Share2 } from "lucide-react";
 import { MasnoryLayout } from "./masnory-layout";
-import { MasonrySkelton } from "./masonry-skelton";
+import { MasonrySkelton } from "./masonry-skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import Link from "next/link";
 

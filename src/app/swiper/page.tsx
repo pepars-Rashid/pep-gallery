@@ -1,4 +1,4 @@
-import { VerticalCarousel } from "@/components/vertical-swiper";
+import { VerticalCarousel } from "@/components/swiper/vertical-swiper";
 
 export default function Swaper() {
   return (
