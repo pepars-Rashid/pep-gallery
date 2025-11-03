@@ -53,6 +53,7 @@ export default function Modal({ children }: { children: React.ReactNode }) {
         ref={wrapper}
         className="absolute w-full h-full max-w-7xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3"
       >
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a href="/" className="flex flex-row justify-start pt-4">
             <PaletteIcon />
             <span className="ml-2">pep-gallery</span>
