@@ -6,37 +6,33 @@ import {
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel";
-import { PicsumImage } from "../masonry";
+import { PicsumImage } from "../masnory/masonry";
 import Image from "next/image";
 import {
-  DollarSign,
-  Heart,
+  ArrowLeft,
   MessageCircle,
-  MoreHorizontal,
   MoreVertical,
   Share2,
   ThumbsUp,
   X,
 } from "lucide-react";
-import { MasonrySkelton } from "../masonry-skeleton";
 import {
   Drawer,
   DrawerClose,
   DrawerContent,
   DrawerDescription,
-  DrawerFooter,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "../ui/button";
-import { SearchBar } from "../search-bar";
 import { Comments } from "../common/comments";
 import { ScrollArea } from "../ui/scroll-area";
 import { Avatar } from "@radix-ui/react-avatar";
 import { AvatarFallback, AvatarImage } from "../ui/avatar";
 import { SwiperSkelton } from "./swiper-skeleton";
 import { Share } from "./share";
+import Link from "next/link";
 
 export function DrawerCarousel({
   children,
@@ -48,7 +44,10 @@ export function DrawerCarousel({
   return (
     <Drawer>
       <DrawerTrigger asChild>
-        <Button className="flex flex-col h-fit items-center gap-1 bg-transparent">
+        <Button
+          variant="ghost"
+          className="flex flex-col h-fit items-center gap-1 bg-transparent"
+        >
           {trigger}
         </Button>
       </DrawerTrigger>
@@ -234,6 +233,14 @@ export function VerticalCarousel({}) {
       orientation="vertical"
       className="w-full max-w-lg h-[90vh] lg:h-[95vh]"
     >
+      <Link href={'/'}>
+        <Button
+          variant="outline"
+          className="absolute size-8 top-7 lg:left-12 left-2 z-50"
+        >
+          <ArrowLeft className="size-6" />
+        </Button>
+      </Link>
       <CarouselContent className="h-[90vh] lg:h-[95vh]">
         {images.map((image) => (
           <CarouselItem key={image.id} className="h-[90vh] lg:h-[95vh]">
@@ -248,8 +255,11 @@ export function VerticalCarousel({}) {
                     className="max-h-full max-w-full object-contain"
                   />
                 </CardContent>
-                <div className="absolute right-4 bottom-18 z-20 flex flex-col gap-0">
-                  <Button className="flex flex-col items-center gap-1 h-fit bg-transparent">
+                <div className="absolute right-1 bottom-18 z-20 flex flex-col gap-0">
+                  <Button
+                    variant="ghost"
+                    className="flex flex-col items-center gap-1 h-fit bg-transparent"
+                  >
                     <ThumbsUp className="size-7 " />
                     <span className=" text-xs ">123</span>
                   </Button>
@@ -281,7 +291,7 @@ export function VerticalCarousel({}) {
                     <DrawerHeader>
                       <DrawerTitle>Share</DrawerTitle>
                     </DrawerHeader>
-                    <Share/>
+                    <Share />
                   </DrawerCarousel>
 
                   <DrawerCarousel
@@ -310,14 +320,16 @@ export function VerticalCarousel({}) {
                       <AvatarFallback>ER</AvatarFallback>
                     </Avatar>
                     <p>pep</p>
-                    <Button variant='outline'>Follow</Button>
+                    <Button variant="outline">Follow</Button>
                   </div>
-                  <p className="line-clamp-2 px-2">
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                    Eius quod, accusantium nobis quis ducimus dolor neque
-                    laborum! Magni incidunt aperiam, sapiente labore quos quo
-                    fuga facilis at, omnis distinctio ducimus?
-                  </p>
+                  <Link href={`/shots/${image.id}`}>
+                    <p className="line-clamp-2 px-2">
+                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                      Eius quod, accusantium nobis quis ducimus dolor neque
+                      laborum! Magni incidunt aperiam, sapiente labore quos quo
+                      fuga facilis at, omnis distinctio ducimus?
+                    </p>
+                  </Link>
                 </div>
               </Card>
             </div>

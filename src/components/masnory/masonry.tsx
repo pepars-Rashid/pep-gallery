@@ -3,13 +3,14 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
-import { Bookmark, Heart, Share2 } from "lucide-react";
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
+import { Bookmark, Share2, ThumbsUp } from "lucide-react";
 import { MasnoryLayout } from "./masnory-layout";
 import { MasonrySkelton } from "./masonry-skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Link from "next/link";
+import { SmartShotLink } from "../common/smart-link";
 
 export interface PicsumImage {
   id: string;
@@ -206,15 +207,17 @@ export default function MasonryGrid() {
         {images.map((image) => (
           <Card className="p-1 relative" key={image.id}>
             <CardContent className="p-1">
-              <Link href={"swiper"} target="_blank" rel="noopener noreferrer">
+              <SmartShotLink shotId={image.id}>
                 <Image
                   alt={`Photo by ${image.author}`}
                   src={image.download_url}
                   width={image.width}
                   height={image.height}
+                  placeholder="blur"
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                   className="rounded-sm hover:scale-105 transition-transform duration-300"
                 />
-              </Link>
+              </SmartShotLink>
               <div className="absolute top-5 left-5 flex items-center gap-3">
                 <Link href={`/profile/${image.author}`}>
                   <Avatar className="size-10 rounded-lg border flex items-center justify-center bg-black">
@@ -226,32 +229,32 @@ export default function MasonryGrid() {
                   </Avatar>
                 </Link>
                 <Link href={`/profile/${image.author}`}>
-                  <span className="text-sm font-medium text-white drop-shadow-md">
+                  <span className="text-sm font-medium text-white">
                     {image.author}
                   </span>
                 </Link>
               </div>
               <div className="absolute bottom-5 right-5 flex gap-2">
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="icon"
-                  className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                  className="rounded-full backdrop-blur-sm"
                 >
-                  <Heart className="h-4 w-4" />
+                  <ThumbsUp className="size-4" />
                 </Button>
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="icon"
-                  className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                  className="rounded-full backdrop-blur-sm"
                 >
-                  <Bookmark className="h-4 w-4" />
+                  <Bookmark className="size-4" />
                 </Button>
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="icon"
-                  className="rounded-full bg-white/80 backdrop-blur-sm hover:bg-white"
+                  className="rounded-full backdrop-blur-sm"
                 >
-                  <Share2 className="h-4 w-4" />
+                  <Share2 className="size-4" />
                 </Button>
               </div>
             </CardContent>

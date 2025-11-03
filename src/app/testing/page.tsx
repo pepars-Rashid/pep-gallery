@@ -1,12 +1,12 @@
-import MasonryGrid from "@/components/masnory/masonry";
 import { Navbar } from "@/components/navbar/nav-menue";
+import ShotDetails from "@/components/shots/shot-details";
 
-export default function Home() {
+export default function Testing() {
   return (
     <div>
-      <Navbar />
+      <Navbar/>
       <div className="pt-24 lg:pt-28 px-3">
-        <MasonryGrid />
+        <ShotDetails />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import MasonryGrid from "@/components/masnory/masonry";
 import { Navbar } from "@/components/navbar/nav-menue";
 
-export default function Home() {
+export default function Shots() {
   return (
     <div>
       <Navbar />
