@@ -135,7 +135,7 @@ function MasonryImageCard({ image }: MasonryImageCardProps) {
   return (
     <Card className="p-1 relative">
       <CardContent className="p-1">
-        <Link href={"swiper"} target="_blank" rel="noopener noreferrer">
+        <Link href={`/shots/${image.id}`}>
           <Image
             alt={`Photo by ${image.author}`}
             src={image.download_url}
@@ -153,7 +153,7 @@ function MasonryImageCard({ image }: MasonryImageCardProps) {
 
 export default function ShotDetails() {
   return (
-    <div className="flex flex-col gap-8 mx-auto max-w-7xl pb-2">
+    <div className="flex flex-col gap-8 mx-auto max-w-7xl pb-10">
       {/* 1. Shop Title */}
       <h1 className="text-3xl font-bold">{shopData.title}</h1>
 

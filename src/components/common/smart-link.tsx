@@ -20,7 +20,7 @@ export function SmartShotLink({
   // Mobile: go to swipe experience
   if (isMobile) {
     return (
-      <Link href={`/swiper/${shotId}`} className={className}>
+      <Link href={`/swiper/${shotId}`} className={className} >
         {children}
       </Link>
     );
