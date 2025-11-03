@@ -236,7 +236,7 @@ export function VerticalCarousel({}) {
       <Link href={'/'}>
         <Button
           variant="outline"
-          className="absolute size-8 top-7 lg:left-12 left-2 z-50"
+          className="absolute size-8 top-5 lg:left-12 left-2 z-50"
         >
           <ArrowLeft className="size-6" />
         </Button>

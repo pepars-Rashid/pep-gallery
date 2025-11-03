@@ -3,7 +3,7 @@ import { useCallback, useRef, useEffect, MouseEventHandler } from "react";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "../ui/scroll-area";
 import { Button } from "../ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, PaletteIcon } from "lucide-react";
 
 export default function Modal({ children }: { children: React.ReactNode }) {
   const overlay = useRef(null);
@@ -53,14 +53,18 @@ export default function Modal({ children }: { children: React.ReactNode }) {
         ref={wrapper}
         className="absolute w-full h-full max-w-7xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 px-3"
       >
+        <a href="/" className="flex flex-row justify-start pt-4">
+            <PaletteIcon />
+            <span className="ml-2">pep-gallery</span>
+          </a>
         <Button
           variant="outline"
-          className="absolute size-8 top-7 lg:right-12 right-2 z-50"
+          className="absolute size-8 top-5 lg:right-12 right-2 z-50"
           onClick={onDismiss}
         >
           <ArrowRight className="size-6"/>
         </Button>
-        <ScrollArea className="h-screen py-6">{children}</ScrollArea>
+        <ScrollArea className="h-screen pt-6 pb-14">{children}</ScrollArea>
       </div>
     </div>
   );
