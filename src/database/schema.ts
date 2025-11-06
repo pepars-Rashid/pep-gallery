@@ -11,7 +11,6 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { length } from "zod";
 
 // ===== ENUMS =====
 export const userRoleEnum = pgEnum("user_role", ["user", "admin"]);
@@ -46,6 +45,7 @@ export const users = pgTable("user", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: varchar("name", { length: 20 }),
+  identifier: varchar("identifier", { length: 40 }),
   email: text("email").notNull().unique(),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   passwordHash: text("passwordHash"),
@@ -131,7 +131,7 @@ export const transactions = pgTable("transaction", {
 
   // SNAPSHOT - Preserve product details at time of transaction
   snapshotTitle: varchar("snapshot_title", { length: 100 }).notNull(),
-  snapshotDescription: varchar("snapshot_description", {length: 500 }),
+  snapshotDescription: varchar("snapshot_description", { length: 500 }),
   snapshotPrice: decimal("snapshot_price", {
     precision: 10,
     scale: 2,
