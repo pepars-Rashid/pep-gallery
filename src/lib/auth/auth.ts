@@ -6,6 +6,7 @@ import Credentials from "next-auth/providers/credentials"
 import GitHub from "next-auth/providers/github"
 import Google from "next-auth/providers/google"
 import { accounts, sessions, users } from "@/database/schema"
+import { eq } from "drizzle-orm"
 import { ZodError } from "zod"
 import { loginFormSchema } from "@/lib/validation-schemas"
  
@@ -22,10 +23,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
+        otpCode: { label: "OTP Code", type: "text", optional: true },
+        userId: { label: "User ID", type: "text", optional: true },
       },
       authorize: async (credentials) => {
         try {
-          // Validate credentials with Zod
+          // If OTP code is provided, this means OTP was already verified
+          // We just need to return the user without password check
+          if (credentials.otpCode && credentials.userId) {
+            const user = await db
+              .select({
+                id: users.id,
+                email: users.email,
+                name: users.name,
+                image: users.image,
+              })
+              .from(users)
+              .where(eq(users.id, credentials.userId as string))
+              .limit(1);
+
+            if (user.length === 0) {
+              return null;
+            }
+
+            return user[0];
+          }
+
+          // Normal login flow - validate credentials with Zod
           const { email, password } = await loginFormSchema.parseAsync(credentials)
           
           // Find user by email and verify password
@@ -36,7 +60,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null // Invalid credentials
           }
           
-          return result
+          // For 2FA flow, we prevent auto-login here
+          // The API route will handle sending OTP
+          return null // This will be handled by the 2FA API route
         } catch (error) {
           if (error instanceof ZodError) {
             return null // Invalid input format

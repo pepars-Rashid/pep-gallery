@@ -267,6 +267,21 @@ export const verificationTokens = pgTable(
   (table) => [primaryKey({ columns: [table.identifier, table.token] })]
 );
 
+// ===== OTP CODES (for 2FA) =====
+export const otpCodes = pgTable("otp_code", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  code: text("code").notNull(), // 6-digit OTP
+  email: text("email").notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }).notNull(),
+  verified: integer("verified").default(0), // 0 = not verified, 1 = verified
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ===== RELATIONS =====
 export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
@@ -276,6 +291,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   reviews: many(reviews),
   accounts: many(accounts),
   sessions: many(sessions),
+  otpCodes: many(otpCodes),
 }));
 
 export const productsRelations = relations(products, ({ one, many }) => ({
@@ -367,6 +383,13 @@ export const accountsRelations = relations(accounts, ({ one }) => ({
 export const sessionsRelations = relations(sessions, ({ one }) => ({
   user: one(users, {
     fields: [sessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const otpCodesRelations = relations(otpCodes, ({ one }) => ({
+  user: one(users, {
+    fields: [otpCodes.userId],
     references: [users.id],
   }),
 }));
