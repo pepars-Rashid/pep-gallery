@@ -15,7 +15,11 @@ export const registerFormSchema = z
       .nonempty("passowrd is required")
       .min(8, "Password must be at least 8 characters")
       .max(20, "Password must be less than 20 characters"),
-    confirmPassword: z.string().min(1, "Please confirm your password"),
+    confirmPassword: z.string().nonempty("Please confirm your password"),
+    otp: z
+      .string()
+      .nonempty("Enter your verficaton code")
+      .length(6, "verficaton code must be 6 digits"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",

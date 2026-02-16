@@ -373,7 +373,7 @@ function DesktopNavbar({ session }: { session: Session | null }) {
                 className={navigationMenuTriggerStyle()}
               >
                 <Link href="/signup">
-                  <Button variant="outline">Sign Up</Button>
+                  <Button variant="default">Sign Up</Button>
                 </Link>
               </NavigationMenuLink>
             </NavigationMenuItem>

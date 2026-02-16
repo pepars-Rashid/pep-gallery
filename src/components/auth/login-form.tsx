@@ -1,44 +1,56 @@
 "use client";
 
-import * as React from "react";
-import Link from "next/link";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import * as z from "zod";
+import { PaletteIcon } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Field,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 import { PasswordInput } from "../ui/password-input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { signIn, SignInResponse } from "next-auth/react";
+import { Controller, useForm } from "react-hook-form";
+import React from "react";
 import { loginFormSchema } from "@/lib/validation-schemas";
-import { Spinner } from "../ui/spinner";
+import { zodResolver } from "@hookform/resolvers/zod";
+import z from "zod";
 import { IconBrandGithub, IconBrandGoogleFilled } from "@tabler/icons-react";
-import { initiateOTP, verifyOTPAndGetUser } from "@/app/actions/auth-otp";
+import { toast } from "sonner";
+import { signIn, SignInResponse } from "next-auth/react";
+import { Spinner } from "../ui/spinner";
+import { useUserStore } from "@/stores/form-store";
+import { verifyOTPAndGetUser } from "@/app/actions/auth-otp";
+import { compareUserFromDb } from "@/utils/auth/compare-user";
+import { createAndSendOTP } from "@/utils/auth/otp";
+import { OTPForm } from "./otp-form";
 
-export default function LoginForm() {
+function maskEmail(email: string) {
+  const [local, domain] = email.split("@");
+  if (!domain) return "***";
+  const visible = local.slice(0, Math.min(3, local.length));
+  return `${visible}***@${domain}`;
+}
+
+export function LoginForm({
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [oauthLoading, setOauthLoading] = React.useState<string | null>(null);
-  const [step, setStep] = React.useState<'login' | 'otp'>('login');
-  const [userId, setUserId] = React.useState<string | null>(null);
-  const [otpCode, setOtpCode] = React.useState('');
+  const [step, setStep] = React.useState<"login" | "otp">("login");
+
+  const storedEmail = useUserStore((state) => state.email);
+  const setData = useUserStore((state) => state.setData);
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
+    mode: "onBlur",
     defaultValues: {
       email: "",
       password: "",
@@ -47,66 +59,72 @@ export default function LoginForm() {
 
   async function onSubmit(values: z.infer<typeof loginFormSchema>) {
     setIsSubmitting(true);
-
+    setData(values);
     try {
-      if (step === 'login') {
-        // Step 1: Verify credentials and send OTP using server action
-        const result = await initiateOTP(values.email, values.password);
-
-        if (!result.success) {
-          toast.error(result.error || 'Failed to send OTP');
-          return;
+      const result = await compareUserFromDb(values.email, values.password);
+      if (result && "error" in result) {
+        switch (result.error) {
+          case "USER_NOT_FOUND":
+          case "NO_PASSWORD_SET":
+            toast.error("Invalid email or password");
+            return;
+          case "INVALID_PASSWORD":
+            toast.error("Incorrect password");
+            return;
+          default:
+            toast.error("Something went wrong. Please try again.");
+            return;
         }
-
-        // OTP sent successfully, move to OTP step
-        setUserId(result.userId || null);
-        setStep('otp');
-        toast.success('OTP sent to your email');
       }
+      const otpResult = await createAndSendOTP(values.email, values.email);
+      if (!otpResult.success) {
+        toast.error(otpResult.error ?? "Failed to send verification code.");
+        return;
+      }
+      toast.success("Verification code sent to your email.");
+      setStep("otp");
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("An error occurred. Please try again.");
+      toast.error("Failed to sign in. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   }
 
-  async function handleOTPVerify(otpValue: string) {
-    if (!userId) {
-      toast.error('Session expired. Please try again.');
+  async function handleOTPSubmit(otpCode: string) {
+    if (!storedEmail) {
+      toast.error("Session expired. Please sign in again.");
+      setStep("login");
       return;
     }
+    const result = await verifyOTPAndGetUser(storedEmail, otpCode);
+    if (!result.success) {
+      toast.error(result.error ?? "Invalid or expired code.");
+      return;
+    }
+    const signInResult = (await signIn("credentials", {
+      email: result.email,
+      otpCode,
+      redirectTo: "/profile",
+    })) as SignInResponse | undefined;
+    if (signInResult?.error) {
+      toast.error("Sign in failed. Please try again.");
+    } else {
+      toast.success("Welcome back!");
+    }
+  }
 
-    setIsSubmitting(true);
-
-    try {
-      // Step 2: Verify OTP using server action
-      const result = await verifyOTPAndGetUser(userId, otpValue);
-
-      if (!result.success) {
-        toast.error(result.error || 'Invalid OTP');
-        return;
-      }
-
-      // OTP verified, now sign in with NextAuth
-      const signInResult = (await signIn("credentials", {
-        email: result.email,
-        userId: userId,
-        otpCode: otpValue,
-        redirectTo: "/profile",
-      })) as SignInResponse | undefined;
-
-      if (signInResult?.error) {
-        toast.error("Login failed. Please try again.");
-      } else {
-        toast.success("Welcome back!");
-        // Redirect will happen automatically
-      }
-    } catch (error) {
-      console.error("OTP verification error:", error);
-      toast.error("An error occurred. Please try again.");
-    } finally {
-      setIsSubmitting(false);
+  async function handleResendOTP() {
+    if (!storedEmail) {
+      toast.error("Session expired. Please sign in again.");
+      setStep("login");
+      return;
+    }
+    const otpResult = await createAndSendOTP(storedEmail, storedEmail);
+    if (otpResult.success) {
+      toast.success("New code sent to your email.");
+    } else {
+      toast.error(otpResult.error ?? "Failed to resend code.");
     }
   }
 
@@ -114,8 +132,6 @@ export default function LoginForm() {
     setOauthLoading(provider);
     try {
       await signIn(provider, { redirectTo: "/profile" });
-      // Note: The redirect will happen, so we don't need to clear loading state
-      // If there's an error, the page won't redirect and we can handle it
     } catch (error) {
       console.error(`OAuth sign in failed for ${provider}:`, error);
       setOauthLoading(null);
@@ -124,222 +140,142 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
-      <Card className="w-full max-w-lg">
-          <CardHeader className="flex flex-col gap-1 justify-center items-center">
-          <CardTitle className="text-2xl font-semibold tracking-tight">
-            {step === 'otp' ? 'Enter Verification Code' : 'Welcome Back'}
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            {step === 'otp' 
-              ? 'We sent a 6-digit code to your email' 
-              : 'Enter your credentials to sign in to your account'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-6">
-          {/* OAuth Providers - Only show on login step */}
-          {step === 'login' && (
-            <>
-              <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleOAuthSignIn("github")}
-              disabled={oauthLoading !== null || isSubmitting}
-            >
-              {oauthLoading === "github" ? <Spinner /> : <IconBrandGithub />}
-              <span className="ml-2">
-                {oauthLoading === "github" ? "Connecting..." : "GitHub"}
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => handleOAuthSignIn("google")}
-              disabled={oauthLoading !== null || isSubmitting}
-            >
-              {oauthLoading === "google" ? <Spinner /> : <IconBrandGoogleFilled />}
-              <span className="ml-2">
-                {oauthLoading === "google" ? "Connecting..." : "Google"}
-              </span>
-            </Button>
-              </div>
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      {step == "login" ? (
+        <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <FieldGroup>
+            <div className="flex flex-col items-center gap-2 text-center">
+              <Link
+                href="/"
+                className="flex flex-col items-center gap-2 font-medium"
+              >
+                <div className="flex size-8 items-center justify-center rounded-md">
+                  <PaletteIcon className="size-6" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
-                    Or continue with email
-                  </span>
-                </div>
-              </div>
-            </>
-          )}
+                <span className="sr-only">Pep-gallery.</span>
+              </Link>
+              <h1 className="text-xl font-bold">Welcome to Pep-gallery.</h1>
+              <FieldDescription>
+                Don&apos;t have an account? <Link href="/signup">Sign up</Link>
+              </FieldDescription>
+            </div>
+            <Controller
+              name="email"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="login-form-email">
+                    Email Address
+                  </FieldLabel>
+                  <Input
+                    {...field}
+                    id="login-form-email"
+                    type="email"
+                    placeholder="Enter your email address"
+                    autoComplete="email"
+                    aria-invalid={fieldState.invalid}
+                    disabled={isSubmitting || oauthLoading !== null}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
 
-          <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
-            <FieldGroup>
-              {step === 'login' ? (
+            <Controller
+              name="password"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="login-form-password">
+                    Password
+                  </FieldLabel>
+                  <PasswordInput
+                    {...field}
+                    id="login-form-password"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    aria-invalid={fieldState.invalid}
+                    disabled={isSubmitting || oauthLoading !== null}
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Button
+              type="submit"
+              form="login-form"
+              className="w-full"
+              disabled={isSubmitting || oauthLoading !== null}
+            >
+              {isSubmitting ? (
                 <>
-                  <Controller
-                    name="email"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="login-form-email">
-                          Email Address
-                        </FieldLabel>
-                        <Input
-                          {...field}
-                          id="login-form-email"
-                          type="email"
-                          placeholder="Enter your email address"
-                          autoComplete="email"
-                          aria-invalid={fieldState.invalid}
-                          disabled={isSubmitting || oauthLoading !== null}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-
-                  <Controller
-                    name="password"
-                    control={form.control}
-                    render={({ field, fieldState }) => (
-                      <Field data-invalid={fieldState.invalid}>
-                        <FieldLabel htmlFor="login-form-password">
-                          Password
-                        </FieldLabel>
-                        <PasswordInput
-                          {...field}
-                          id="login-form-password"
-                          placeholder="Enter your password"
-                          autoComplete="current-password"
-                          aria-invalid={fieldState.invalid}
-                          disabled={isSubmitting || oauthLoading !== null}
-                        />
-                        {fieldState.invalid && (
-                          <FieldError errors={[fieldState.error]} />
-                        )}
-                      </Field>
-                    )}
-                  />
-
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm">
-                      <Link
-                        href="/forgot-password"
-                        className="text-primary hover:underline"
-                      >
-                        Forgot password?
-                      </Link>
-                    </div>
-                  </div>
+                  <Spinner />
+                  Signing In...
                 </>
               ) : (
-                <>
-                  <Field>
-                    <FieldLabel htmlFor="login-form-otp">
-                      Verification Code
-                    </FieldLabel>
-                    <InputOTP
-                      maxLength={6}
-                      value={otpCode}
-                      onChange={(value) => setOtpCode(value)}
-                      onComplete={(value) => {
-                        if (value.length === 6) {
-                          handleOTPVerify(value);
-                        }
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} />
-                        <InputOTPSlot index={1} />
-                        <InputOTPSlot index={2} />
-                        <InputOTPSlot index={3} />
-                        <InputOTPSlot index={4} />
-                        <InputOTPSlot index={5} />
-                      </InputOTPGroup>
-                    </InputOTP>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Enter the 6-digit code sent to your email
-                    </p>
-                  </Field>
-
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full"
-                    onClick={() => {
-                      setStep('login');
-                      setOtpCode('');
-                      setUserId(null);
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    ← Back to login
-                  </Button>
-
-                  <Button
-                    type="button"
-                    className="w-full"
-                    onClick={() => {
-                      if (otpCode.length === 6) {
-                        handleOTPVerify(otpCode);
-                      } else {
-                        toast.error('Please enter a valid 6-digit code');
-                      }
-                    }}
-                    disabled={isSubmitting || otpCode.length !== 6}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Spinner />
-                        Verifying...
-                      </>
-                    ) : (
-                      'Verify & Sign In'
-                    )}
-                  </Button>
-                </>
+                "Sign In"
               )}
-
-              {step === 'login' && (
-                <Button
-                  type="submit"
-                  form="login-form"
-                  className="w-full"
-                  disabled={isSubmitting || oauthLoading !== null}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Spinner />
-                      Sending OTP...
-                    </>
-                  ) : (
-                    'Continue'
-                  )}
-                </Button>
-              )}
-            </FieldGroup>
-          </form>
-
-          <div className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/signup"
-              className="font-medium text-primary hover:underline"
-            >
-              Sign up
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+            </Button>
+            <FieldSeparator>Or</FieldSeparator>
+            <Field className="grid gap-4 sm:grid-cols-2">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleOAuthSignIn("github")}
+                disabled={oauthLoading !== null || isSubmitting}
+              >
+                {oauthLoading === "github" ? <Spinner /> : <IconBrandGithub />}
+                <span className="ml-2">
+                  {oauthLoading === "github" ? "Connecting..." : "GitHub"}
+                </span>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleOAuthSignIn("google")}
+                disabled={oauthLoading !== null || isSubmitting}
+              >
+                {oauthLoading === "google" ? (
+                  <Spinner />
+                ) : (
+                  <IconBrandGoogleFilled />
+                )}
+                <span className="ml-2">
+                  {oauthLoading === "google" ? "Connecting..." : "Google"}
+                </span>
+              </Button>
+            </Field>
+          </FieldGroup>
+        </form>
+      ) : (
+        <OTPForm
+          onOTPSubmit={handleOTPSubmit}
+          onResendCode={handleResendOTP}
+        >
+          {storedEmail ? maskEmail(storedEmail) : ""}
+        </OTPForm>
+      )}
+      {step === "otp" && (
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            setStep("login");
+          }}
+          disabled={isSubmitting}
+        >
+          ← Back to login
+        </Button>
+      )}
+      <FieldDescription className="px-6 text-center">
+        By clicking continue, you agree to our{" "}
+        <Link href="#">Terms of Service</Link> and{" "}
+        <Link href="#">Privacy Policy</Link>.
+      </FieldDescription>
     </div>
   );
 }

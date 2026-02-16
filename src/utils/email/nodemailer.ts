@@ -1,11 +1,5 @@
 import nodemailer from 'nodemailer'
 
-/**
- * MailerSend SMTP Configuration
- * 
- * Get your credentials from:
- * MailerSend Dashboard → Settings → SMTP
- */
 const transporter = nodemailer.createTransport({
   host: process.env.MAILERSEND_SMTP_HOST || 'smtp.mailersend.com',
   port: parseInt(process.env.MAILERSEND_SMTP_PORT || '587'),
@@ -16,9 +10,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-/**
- * Send OTP email to user
- */
 export async function sendOTPEmail(email: string, otpCode: string) {
   try {
     const mailOptions = {

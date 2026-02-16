@@ -220,7 +220,7 @@ export default function MasonryGrid() {
               </SmartShotLink>
               <div className="absolute top-5 left-5 flex items-center gap-3">
                 <Link href={`/profile/${image.author}`}>
-                  <Avatar className="size-10 rounded-lg border flex items-center justify-center bg-black">
+                  <Avatar className="size-10 rounded-full border flex items-center justify-center bg-black">
                     <AvatarImage
                       src="https://avatar.iran.liara.run/public/15"
                       alt="@evilrabbit"

@@ -32,8 +32,8 @@ export async function initiateOTP(email: string, password: string) {
       };
     }
 
-    // Create and send OTP
-    const otpResult = await createAndSendOTP(user[0].id, email);
+    // Create and send OTP using email as identifier
+    const otpResult = await createAndSendOTP(email, email);
 
     if (!otpResult.success) {
       return {
@@ -59,17 +59,17 @@ export async function initiateOTP(email: string, password: string) {
 
 // Server Action: Verify OTP and get user email
 
-export async function verifyOTPAndGetUser(userId: string, otpCode: string) {
+export async function verifyOTPAndGetUser(email: string, otpCode: string) {
   try {
-    if (!userId || !otpCode) {
+    if (!email || !otpCode) {
       return {
         success: false,
-        error: 'Missing OTP code or user ID',
+        error: 'Missing OTP code or email',
       };
     }
 
-    // Verify OTP
-    const verification = await verifyOTP(userId, otpCode);
+    // Verify OTP using email as identifier
+    const verification = await verifyOTP(email, otpCode);
 
     if (!verification.success) {
       return {
@@ -78,11 +78,11 @@ export async function verifyOTPAndGetUser(userId: string, otpCode: string) {
       };
     }
 
-    // Get user email
+    // Get user to return userId
     const user = await db
-      .select({ email: users.email })
+      .select({ id: users.id, email: users.email })
       .from(users)
-      .where(eq(users.id, userId))
+      .where(eq(users.email, email))
       .limit(1);
 
     if (user.length === 0) {
@@ -95,7 +95,7 @@ export async function verifyOTPAndGetUser(userId: string, otpCode: string) {
     return {
       success: true,
       message: 'OTP verified successfully',
-      userId: userId,
+      userId: user[0].id,
       email: user[0].email,
     };
   } catch (error) {
