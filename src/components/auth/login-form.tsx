@@ -43,10 +43,18 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [oauthLoading, setOauthLoading] = React.useState<string | null>(null);
-  const [step, setStep] = React.useState<"login" | "otp">("login");
 
   const storedEmail = useUserStore((state) => state.email);
   const setData = useUserStore((state) => state.setData);
+  const authFlow = useUserStore((state) => state.authFlow);
+  const authStep = useUserStore((state) => state.authStep);
+  const setAuthStep = useUserStore((state) => state.setAuthStep);
+  const setAuthFlow = useUserStore((state) => state.setAuthFlow);
+  const clearAuthState = useUserStore((state) => state.clearAuthState);
+
+  // Derive step from persisted store so it survives tab/app switch (e.g. user checking email)
+  const step =
+    authFlow === "login" && authStep === "otp" && storedEmail ? "otp" : "login";
 
   const form = useForm<z.infer<typeof loginFormSchema>>({
     resolver: zodResolver(loginFormSchema),
@@ -82,7 +90,8 @@ export function LoginForm({
         return;
       }
       toast.success("Verification code sent to your email.");
-      setStep("otp");
+      setAuthFlow("login");
+      setAuthStep("otp");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Failed to sign in. Please try again.");
@@ -94,7 +103,8 @@ export function LoginForm({
   async function handleOTPSubmit(otpCode: string) {
     if (!storedEmail) {
       toast.error("Session expired. Please sign in again.");
-      setStep("login");
+      setAuthStep("form");
+      setAuthFlow(null);
       return;
     }
     const result = await verifyOTPAndGetUser(storedEmail, otpCode);
@@ -102,6 +112,7 @@ export function LoginForm({
       toast.error(result.error ?? "Invalid or expired code.");
       return;
     }
+    clearAuthState();
     const signInResult = (await signIn("credentials", {
       email: result.email,
       otpCode,
@@ -117,7 +128,8 @@ export function LoginForm({
   async function handleResendOTP() {
     if (!storedEmail) {
       toast.error("Session expired. Please sign in again.");
-      setStep("login");
+      setAuthStep("form");
+      setAuthFlow(null);
       return;
     }
     const otpResult = await createAndSendOTP(storedEmail, storedEmail);
@@ -264,7 +276,8 @@ export function LoginForm({
           type="button"
           variant="ghost"
           onClick={() => {
-            setStep("login");
+            setAuthStep("form");
+            setAuthFlow(null);
           }}
           disabled={isSubmitting}
         >

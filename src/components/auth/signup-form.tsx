@@ -47,12 +47,21 @@ function maskEmail(email: string) {
 export default function SignupForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [oauthLoading, setOauthLoading] = React.useState<string | null>(null);
-  const [step, setStep] = React.useState<"form" | "otp">("form");
 
   const storedEmail = useUserStore((state) => state.email);
   const storedPassword = useUserStore((state) => state.password);
   const storedName = useUserStore((state) => state.name);
   const setData = useUserStore((state) => state.setData);
+  const authFlow = useUserStore((state) => state.authFlow);
+  const authStep = useUserStore((state) => state.authStep);
+  const setAuthStep = useUserStore((state) => state.setAuthStep);
+  const setAuthFlow = useUserStore((state) => state.setAuthFlow);
+  const clearAuthState = useUserStore((state) => state.clearAuthState);
+
+  const step =
+    authFlow === "signup" && authStep === "otp" && storedEmail
+      ? "otp"
+      : "form";
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -79,7 +88,8 @@ export default function SignupForm() {
       }
 
       toast.success("Verification code sent to your email.");
-      setStep("otp");
+      setAuthFlow("signup");
+      setAuthStep("otp");
     } catch (error) {
       console.error("Registration error:", error);
       toast.error("Failed to start verification. Please try again.");
@@ -91,7 +101,8 @@ export default function SignupForm() {
   async function handleOTPSubmit(otpCode: string) {
     if (!storedEmail || !storedPassword || !storedName) {
       toast.error("Session expired. Please fill the form again.");
-      setStep("form");
+      setAuthStep("form");
+      setAuthFlow(null);
       return;
     }
 
@@ -107,6 +118,7 @@ export default function SignupForm() {
 
       if (newUser) {
         toast.success("Account created successfully!");
+        clearAuthState();
 
         // Auto-login after successful registration
         const result = (await signIn("credentials", {
@@ -136,7 +148,8 @@ export default function SignupForm() {
   async function handleResendOTP() {
     if (!storedEmail) {
       toast.error("Session expired. Please fill the form again.");
-      setStep("form");
+      setAuthStep("form");
+      setAuthFlow(null);
       return;
     }
 
@@ -330,7 +343,10 @@ export default function SignupForm() {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={() => setStep("form")}
+                onClick={() => {
+                  setAuthStep("form");
+                  setAuthFlow(null);
+                }}
                 disabled={isSubmitting}
               >
                 ← Back to details
